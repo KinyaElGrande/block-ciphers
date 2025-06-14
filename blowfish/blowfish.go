@@ -62,8 +62,8 @@ func encryptBlowfish(plaintext, key []byte) ([]byte, error) {
 	return result, nil
 }
 
-// decryptBlowfish decrypts blowfish CBC mode
-func decryptBlowfish(ciphertext, key []byte) ([]byte, error) {
+// decryptCBCBlowfish decrypts blowfish CBC mode
+func decryptCBCBlowfish(ciphertext, key []byte) ([]byte, error) {
 	block, err := blowfish.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -127,30 +127,43 @@ func decryptBlowfishECB(ciphertext, key []byte) ([]byte, error) {
 func main() {
 	key := []byte("CryptoKey2025")
 	plaintext := []byte(`
-FROM off a hill whose concave womb reworded
-A plaintful story from a sistering vale`)
+	....
+	This Love is beyond the study of theology,
+that old trickery and hypocrisy.
+I you want to improve your mind that way,
+	sleep on
+	...
 
-	fmt.Println("=== Blowfish Encryption Demo ===")
+	By: ... Rumi)
+		`)
+
+	fmt.Println("=== Blowfish Encryption Inputs ===")
 	fmt.Printf("Original text: %s\n", string(plaintext))
 	fmt.Printf("Key: %s\n", string(key))
 	fmt.Printf("Block size: %d bytes\n\n", blowfish.BlockSize)
 
+	// CBC Mode Encryption section
 	fmt.Println("#--- CBC Mode  ---#")
 	ciphertext, err := encryptBlowfish(plaintext, key)
 	if err != nil {
 		log.Fatal("Encryption error:", err)
 	}
 
-	fmt.Printf("Encrypted (hex): %s\n", hex.EncodeToString(ciphertext))
-	fmt.Printf("Ciphertext length: %d bytes\n", len(ciphertext))
-
-	decrypted, err := decryptBlowfish(ciphertext, key)
+	decryptedCbc, err := decryptCBCBlowfish(ciphertext, key)
 	if err != nil {
-		log.Fatal("Decryption error:", err)
+		log.Fatal("CBC Decryption error:", err)
 	}
 
-	fmt.Printf("Decrypted: %s\n", string(decrypted))
-	fmt.Printf("Success: %t\n\n", string(plaintext) == string(decrypted))
+	successStr := "CBC mode Encrypion >> Decryption has"
+	if string(plaintext) == string(decryptedCbc) {
+		fmt.Printf("%s been successful!\n", successStr)
+
+		fmt.Printf("Encrypted (hex): %s\n", hex.EncodeToString(ciphertext))
+		fmt.Printf("Ciphertext length: %d bytes\n", len(ciphertext))
+		fmt.Printf("Decrypted: %s\n", string(decryptedCbc))
+	} else {
+		fmt.Printf("%s failed!\n", successStr)
+	}
 
 	// ECB Mode Encryption section
 	fmt.Println("#--- ECB Mode ---#")
@@ -159,18 +172,23 @@ A plaintful story from a sistering vale`)
 		log.Fatal("ECB Encryption error:", err)
 	}
 
-	fmt.Printf("ECB Encrypted (hex): %s\n", hex.EncodeToString(ciphertextECB))
-	fmt.Printf("ECB Ciphertext length: %d bytes\n", len(ciphertextECB))
-
 	decryptedECB, err := decryptBlowfishECB(ciphertextECB, key)
 	if err != nil {
 		log.Fatal("ECB Decryption error:", err)
 	}
 
-	fmt.Printf("ECB Decrypted: %s\n", string(decryptedECB))
-	fmt.Printf("ECB Success: %t\n\n", string(plaintext) == string(decryptedECB))
+	successStr = "ECB mode Encrypion >> Decryption has"
+	if string(plaintext) == string(decryptedECB) {
+		fmt.Printf("%s been successful!\n", successStr)
 
-	// Section 2:  Demonstrate block processing
+		fmt.Printf("ECB Encrypted (hex): %s\n", hex.EncodeToString(ciphertextECB))
+		fmt.Printf("ECB Ciphertext length: %d bytes\n", len(ciphertextECB))
+		fmt.Printf("ECB Decrypted: %s\n", string(decryptedECB))
+	} else {
+		fmt.Printf("%s failed!\n", successStr)
+	}
+
+	// Section 2: blocks processing demonstration
 	fmt.Println("--- Block Processing Details ---")
 	fmt.Printf("Original length: %d bytes\n", len(plaintext))
 	paddedData := pad(plaintext, blowfish.BlockSize)
